@@ -16,7 +16,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://127.0.0.1:27017/Transaction'),
+    MongooseModule.forRoot('process.env.MONGO_URI'),
 
     JwtModule.register({ secret: 'secretKey' }),
     MongooseModule.forFeature([
