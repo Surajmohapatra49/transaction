@@ -44,37 +44,21 @@ export class ReportsService {
       'Mobile',
     ]);
 
-    // Use aggregation to format timestamp
-    const transactions = await this.transactionModel.aggregate([
-      {
-        $project: {
-          type: 1,
-          invoice: 1,
-          status: 1,
-          mobile: 1,
-          formattedTimestamp: {
-            $dateToString: {
-              format: '%Y-%m-%d %I:%M %p',
-              date: {
-                $toDate: { $multiply: ['$timestamp', 1000] },
-              },
-            },
-          },
-        },
-      },
-    ]);
+    const transactions = await this.transactionModel.find();
 
     transactions.forEach((txn, index) => {
-      const row = dumpSheet.addRow([
+      const formattedTimestamp = dayjs
+        .unix(txn.timestamp)
+        .format('YYYY-MM-DD hh:mm A'); // 👈 12-hour format with AM/PM
+
+      dumpSheet.addRow([
         index + 1,
         txn.type,
         txn.invoice,
-        txn.formattedTimestamp,
+        formattedTimestamp,
         txn.status || '-',
         txn.mobile || '-',
       ]);
-
-      row.getCell(4).numFmt = '@'; // Treat timestamp column as text in Excel
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
