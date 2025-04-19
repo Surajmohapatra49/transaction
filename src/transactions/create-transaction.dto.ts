@@ -7,10 +7,6 @@ export class CreateTransactionDto {
 
   @IsString()
   @IsNotEmpty()
-  invoice: string;
-
-  @IsString()
-  @IsNotEmpty()
   status: string;
 
   @IsString()

@@ -12,17 +12,19 @@ export class TransactionsController {
   }
 
   @Get()
-  async findAll(
-    @Query('type') type: string,
-    @Query('start') start: string,
-    @Query('end') end: string,
-    @Query('page') page = '1',
-    @Query('limit') limit = '10',
+  async getTransactions(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('type') type?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     return this.transactionsService.findAll(
-      { type, start, end },
-      Number(page),
-      Number(limit),
+      Number(page) || 1,
+      Number(limit) || 10,
+      type,
+      startDate,
+      endDate,
     );
   }
 }
