@@ -21,24 +21,31 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   imports: [
-    // Load environment variables
+    // Load environment variables globally
     ConfigModule.forRoot({
       isGlobal: true,
     }),
 
-    // Use ConfigService to load Mongo URI safely
+    // MongoDB connection using async factory
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI'),
-      }),
       inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGO_URI');
+        if (!uri) {
+          throw new Error('MONGO_URI is not defined in the environment');
+        }
+        return { uri };
+      },
     }),
 
-    // JWT setup
-    JwtModule.register({ secret: 'secretKey' }),
+    // JWT setup (ideally move secret to env too)
+    JwtModule.register({
+      secret: 'secretKey', // or use: secret: configService.get('JWT_SECRET')
+      signOptions: { expiresIn: '1h' },
+    }),
 
-    // Register Transaction schema
+    // MongoDB schemas
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
     ]),
