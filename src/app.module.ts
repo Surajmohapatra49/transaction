@@ -35,14 +35,21 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
         if (!uri) {
           throw new Error('MONGO_URI is not defined in the environment');
         }
+        console.log('MongoDB URI:', uri); // Optional: for debugging
         return { uri };
       },
     }),
 
-    // JWT setup (ideally move secret to env too)
-    JwtModule.register({
-      secret: 'secretKey', // or use: secret: configService.get('JWT_SECRET')
-      signOptions: { expiresIn: '1h' },
+    // JWT setup with env-based config
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET') || 'defaultSecret',
+        signOptions: {
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '1h',
+        },
+      }),
     }),
 
     // MongoDB schemas
